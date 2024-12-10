@@ -86,7 +86,7 @@ export async function saveDataToDatabase(
         const restaurantId = restaurantResult.rows[0].id;
 
         for (const dish of restaurant.dishes) {
-          console.log(day.date);
+          // console.log(day.date);
           // Insert dish
           await sql`
             INSERT INTO dishes (id, name, restaurant_id, description, date) 

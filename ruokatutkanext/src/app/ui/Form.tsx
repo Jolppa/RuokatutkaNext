@@ -1,9 +1,15 @@
 "use client";
+
+import { useEffect } from "react";
 import { useActionState } from "react";
 import { listRestaurants } from "../util/actions";
 import { FormState } from "../util/types";
 
-export default function Form() {
+interface FormProps {
+  onActionComplete: () => void;
+}
+
+export default function Form({ onActionComplete }: FormProps) {
   const initialState: FormState = {
     error: null,
   };
@@ -11,9 +17,17 @@ export default function Form() {
     listRestaurants,
     initialState
   );
+
+  useEffect(() => {
+    if (!isPending && !state.error) {
+      onActionComplete();
+    }
+  }, [isPending]);
+
   const resetError = () => {
     state.error = null;
   };
+
   return (
     <section>
       <form
@@ -31,7 +45,6 @@ export default function Form() {
           type="text"
           required
         />
-
         <button
           className={`rounded-lg p-2 mt-2 ${
             isPending ? "bg-gray-500" : "bg-blue-500 text-white"

@@ -19,8 +19,21 @@ export type ResultListData =
       restaurant_name: string;
       dish_name: string;
       description: string;
-      date: Date;
+      date: string;
       id: string;
       city: string;
     }[]
   | null;
+
+export type GroupedData = {
+  [date: string]: {
+    [restaurantName: string]: {
+      city: string;
+      dishes: {
+        id: string;
+        dish_name: string;
+        description: string;
+      }[];
+    };
+  };
+};
