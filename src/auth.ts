@@ -16,7 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
 
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         // credentials contains the username and password submitted via the login form
 
         const { username, password } = credentials as {

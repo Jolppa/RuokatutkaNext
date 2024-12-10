@@ -9,7 +9,7 @@ export const authConfig = {
     signIn: "/login",
   },
   callbacks: {
-    async authorized({ auth, request }) {
+    async authorized({ auth }) {
       // console.log(auth);
       const isLoggedIn = auth?.user;
       if (!isLoggedIn) {

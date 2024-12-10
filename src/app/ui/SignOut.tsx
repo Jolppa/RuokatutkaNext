@@ -2,11 +2,10 @@
 import { signout } from "../util/actions";
 import { useActionState } from "react";
 
+const initialState = undefined;
+
 export function SignOut() {
-  const initialState = {
-    error: "",
-  };
-  const [state, formAction, isPending] = useActionState(signout, initialState);
+  const [, formAction, isPending] = useActionState(signout, initialState);
   return (
     <form action={formAction}>
       <button
