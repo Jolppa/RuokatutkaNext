@@ -192,13 +192,13 @@ export async function listRestaurants(
       data.push(entryObj);
     }
 
-    // await browser.close();
+    await browser.close();
 
     // Save to database
 
     await saveDataToDatabase(userId, data);
     console.log("end");
-    return data;
+    return { data };
   } catch (error) {
     console.error("Failed to list restaurants:", error);
     return {

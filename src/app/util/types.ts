@@ -5,12 +5,15 @@ export type User = {
 };
 
 export type FormState = {
-  date?: string;
-  restaurants?: {
-    name: string;
-    city: string;
-    dishes: { dish: string; description: string }[];
+  data?: {
+    date: string;
+    restaurants: {
+      name: string;
+      city: string;
+      dishes: { dish: string; description: string }[];
+    }[];
   }[];
+
   error?: null | string;
 };
 
