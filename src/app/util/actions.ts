@@ -198,6 +198,7 @@ export async function listRestaurants(
 
     await saveDataToDatabase(userId, data);
     console.log("end");
+    // I don't know if we are doing anything with the data
     return { data };
   } catch (error) {
     console.error("Failed to list restaurants:", error);
