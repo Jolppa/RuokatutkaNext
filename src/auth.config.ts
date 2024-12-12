@@ -6,7 +6,7 @@ export const authConfig = {
   },
   pages: {
     error: "/",
-    signIn: "/login",
+    signIn: "/kirjaudu",
   },
   callbacks: {
     async authorized({ auth }) {
@@ -17,9 +17,6 @@ export const authConfig = {
       }
       return true;
     },
-    // async redirect({ url, baseUrl }) {
-    //   return `${baseUrl}/dashboard`;
-    // },
     async session({ session, token }) {
       session.user.id = <string>token.id;
       return session;
