@@ -68,9 +68,10 @@ export const getSortedDates = (
 export const getDateColor = (dateStr: string) => {
   const date = new Date(dateStr);
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
-  // This does not work
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+
   if (date.getTime() === today.getTime()) return "bg-green-800/50";
   if (date < today) return "bg-red-800/50";
   return "bg-yellow-800/50";
@@ -86,7 +87,7 @@ export const highlightText = (text: string, highlight: string) => {
     <>
       {parts.map((part, index) =>
         part.toLowerCase() === highlight.toLowerCase() ? (
-          <span className="bg-yellow-300" key={index}>
+          <span className="bg-yellow-300 text-black" key={index}>
             {part}
           </span>
         ) : (

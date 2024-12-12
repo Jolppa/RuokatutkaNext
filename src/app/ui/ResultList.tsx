@@ -95,7 +95,7 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
           </div>
         </div>
       ) : (
-        <p>No results found.</p>
+        <p>Ei tuloksia.</p>
       )}
       {/* Search and Sort Controls */}
       <div className="flex justify-between items-center mb-4">
@@ -107,11 +107,11 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
             }}
             className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
           >
-            Sort {sortAscending ? "↑" : "↓"}
+            Päivämäärä {sortAscending ? "↑" : "↓"}
           </button>
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Haku"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -129,10 +129,10 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
               disabled={currentPage === 1}
               className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600 disabled:bg-gray-400"
             >
-              Previous
+              Edellinen
             </button>
             <span className="px-4 py-2">
-              Page {currentPage} of {totalPages}
+              Sivu {currentPage} / {totalPages}
             </span>
             <button
               onClick={() =>
@@ -141,7 +141,7 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
               disabled={currentPage === totalPages}
               className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600 disabled:bg-gray-400"
             >
-              Next
+              Seuraava
             </button>
           </div>
         )}

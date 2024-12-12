@@ -17,7 +17,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Ruokatutka",
   // Add a description
-  description: "asdasdasd",
+  description: "Ruokatutka",
 };
 
 export default async function RootLayout({

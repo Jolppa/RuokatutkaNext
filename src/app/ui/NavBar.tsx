@@ -1,28 +1,39 @@
+"use server";
 import React from "react";
 import Link from "next/link";
 import { SignOut } from "./SignOut";
+import { auth } from "@/auth";
 
-const NavBar: React.FC = () => {
+const NavBar: React.FC = async () => {
+  const session = await auth();
   return (
     <nav className="bg-gray-800 p-4 min-w-full">
       <ul className="flex justify-around list-none m-0 p-0">
         <li className="m-0">
-          <Link href="/">Home</Link>
+          <Link href="/">Etusivu</Link>
         </li>
 
-        <li className="m-0">
-          <Link href="/login">Login</Link>
-        </li>
-        <li className="m-0">
-          <SignOut />
-        </li>
+        {!session && (
+          <>
+            <li className="m-0">
+              <Link href="/kirjaudu">Kirjaudu sisään</Link>
+            </li>
+            <li className="m-0">
+              <Link href="/tunnusluonti">Luo tunnus</Link>
+            </li>
+          </>
+        )}
 
-        <li className="m-0">
-          <Link href="/register">Registeration</Link>
-        </li>
-        <li className="m-0">
-          <Link href="/dashboard">Dashboard</Link>
-        </li>
+        {session && (
+          <>
+            <li className="m-0">
+              <Link href="/tutka">Tutka</Link>
+            </li>
+            <li className="m-0">
+              <SignOut />
+            </li>
+          </>
+        )}
       </ul>
     </nav>
   );

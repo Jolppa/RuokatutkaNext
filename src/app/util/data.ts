@@ -72,7 +72,7 @@ export async function saveDataToDatabase(
           INSERT INTO searches (id, user_id, city, date) 
           VALUES (${uuidv4()},${user_id}, ${
           restaurant.city
-        }, ${new Date().toLocaleTimeString()}) 
+        }, ${new Date().toLocaleString("fi-FI")}) 
           RETURNING id
         `;
 
@@ -92,7 +92,7 @@ export async function saveDataToDatabase(
             INSERT INTO dishes (id, name, restaurant_id, description, date) 
             VALUES (${uuidv4()},${dish.dish}, ${restaurantId}, ${
             dish.description
-          }, ${day.date})
+          }, ${day.date.split("T")[0]})
             ON CONFLICT (name, restaurant_id) DO UPDATE SET description = EXCLUDED.description
           `;
         }
@@ -133,7 +133,7 @@ export async function seed() {
   await sql`
     CREATE TABLE IF NOT EXISTS dishes (
       id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
+      name VARCHAR(1024) NOT NULL,
       restaurant_id INTEGER REFERENCES restaurants(id),
       description TEXT,
       date TIMESTAMP NOT NULL

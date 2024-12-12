@@ -8,13 +8,8 @@ export function SignOut() {
   const [, formAction, isPending] = useActionState(signout, initialState);
   return (
     <form action={formAction}>
-      <button
-        className={`rounded-lg p-2 mt-2 ${
-          isPending ? "bg-gray-500" : "bg-blue-500 text-white"
-        }`}
-        disabled={isPending}
-      >
-        Sign Out
+      <button className="m-0" disabled={isPending}>
+        {isPending ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
       </button>
     </form>
   );

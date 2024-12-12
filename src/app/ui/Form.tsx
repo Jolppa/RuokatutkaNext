@@ -52,7 +52,7 @@ export default function Form({ onActionComplete }: FormProps) {
           onClick={resetError}
           disabled={isPending}
         >
-          Search
+          Päivitä tietokanta
         </button>
       </form>
       {isPending && (

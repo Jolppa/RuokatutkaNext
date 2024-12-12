@@ -11,7 +11,7 @@ export default auth((req) => {
   const isAuthenticated = !!req.auth;
   // const isPublicRoute = PUBLIC_ROUTES.includes(nextUrl.pathname);
 
-  if (!isAuthenticated && nextUrl.pathname === "/dashboard") {
+  if (!isAuthenticated && nextUrl.pathname === "/tutka") {
     return Response.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
   }
 });
