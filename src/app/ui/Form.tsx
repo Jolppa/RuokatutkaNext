@@ -31,10 +31,10 @@ export default function Form({ onActionComplete }: FormProps) {
   return (
     <section>
       <form
-        className="flex flex-col items-center border-white border-2 rounded-lg p-4"
+        className="flex flex-col items-center rounded-lg p-4 shadow-2xl bg-[#4F6169]"
         action={formAction}
       >
-        <label className="text-lg" htmlFor="Kaupunki">
+        <label className="text-lg" htmlFor="kaupunki">
           Valitse kaupunki
         </label>
         <input

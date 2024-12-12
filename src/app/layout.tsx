@@ -26,13 +26,18 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fi">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-hidden`}
       >
-        <NavBar />
+        <header>
+          <NavBar />
+        </header>
 
-        <main className="flex justify-center items-center mx-auto min-h-screen justify-around">
+        <main
+          className="flex justify-center items-center mx-auto min-h-screen justify-around"
+          role="main"
+        >
           {children}
         </main>
       </body>

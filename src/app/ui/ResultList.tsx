@@ -11,6 +11,9 @@ import {
   highlightText,
 } from "../util/dataUtils";
 
+import FilterControls from "./FilterControls";
+import PaginationControls from "./PaginationControls";
+
 interface ResultListProps {
   refreshKey: number;
 }
@@ -22,6 +25,12 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
   const [groupedData, setGroupedData] = useState<GroupedData>({});
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Filter states
+  const [restaurantOptions, setRestaurantOptions] = useState<string[]>([]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<string>("");
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string>("");
+
   // Fetch and group data whenever refreshKey changes
   useEffect(() => {
     const getData = async () => {
@@ -29,7 +38,19 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
       setData(result);
       const grouped = groupDataByDateAndRestaurant(result);
       setGroupedData(grouped);
-      setCurrentPage(1); // Reset to first page when new data arrives
+      setCurrentPage(1);
+
+      // Extract unique restaurants and cities
+      const restaurantsSet = new Set<string>();
+      const citiesSet = new Set<string>();
+
+      result?.forEach((item) => {
+        if (item.restaurant_name) restaurantsSet.add(item.restaurant_name);
+        if (item.city) citiesSet.add(item.city);
+      });
+
+      setRestaurantOptions(Array.from(restaurantsSet).sort());
+      setCityOptions(Array.from(citiesSet).sort());
     };
     getData();
   }, [refreshKey]);
@@ -37,7 +58,12 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
   // Filter and sort data
   const filteredGroupedData: GroupedData = {};
   Object.entries(groupedData).forEach(([date, restaurants]) => {
-    const filteredRestaurants = filterRestaurants(restaurants, searchTerm);
+    const filteredRestaurants = filterRestaurants(
+      restaurants,
+      searchTerm,
+      selectedRestaurant,
+      selectedCity
+    );
     if (Object.keys(filteredRestaurants).length > 0) {
       filteredGroupedData[date] = filteredRestaurants;
     }
@@ -46,10 +72,10 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
   const sortedDates = getSortedDates(filteredGroupedData, sortAscending);
 
   // Pagination logic
-  const totalPages = Math.max(sortedDates.length, 1); // Ensure at least 1 page
+  const totalPages = Math.max(sortedDates.length, 1);
   const currentDate = sortedDates[currentPage - 1];
 
-  // This will adjust currentPage if it exceeds totalPages
+  // Adjust currentPage if it exceeds totalPages
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
@@ -97,55 +123,39 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
       ) : (
         <p>Ei tuloksia.</p>
       )}
-      {/* Search and Sort Controls */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center">
-          <button
-            onClick={() => {
-              setSortAscending(!sortAscending);
-              setCurrentPage(1); // Reset to first page when sorting changes
-            }}
-            className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
-          >
-            Päivämäärä {sortAscending ? "↑" : "↓"}
-          </button>
-          <input
-            type="text"
-            placeholder="Haku"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1); // Reset to first page when search term changes
-            }}
-            className="ml-2 px-4 py-2 border rounded-lg text-black"
-          />
-        </div>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600 disabled:bg-gray-400"
-            >
-              Edellinen
-            </button>
-            <span className="px-4 py-2">
-              Sivu {currentPage} / {totalPages}
-            </span>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600 disabled:bg-gray-400"
-            >
-              Seuraava
-            </button>
-          </div>
-        )}
-      </div>
+      {/* Filter Controls */}
+      <FilterControls
+        sortAscending={sortAscending}
+        setSortAscending={(value) => {
+          setSortAscending(value);
+          setCurrentPage(1);
+        }}
+        searchTerm={searchTerm}
+        setSearchTerm={(value) => {
+          setSearchTerm(value);
+          setCurrentPage(1);
+        }}
+        restaurantOptions={restaurantOptions}
+        selectedRestaurant={selectedRestaurant}
+        setSelectedRestaurant={(value) => {
+          setSelectedRestaurant(value);
+          setCurrentPage(1);
+        }}
+        cityOptions={cityOptions}
+        selectedCity={selectedCity}
+        setSelectedCity={(value) => {
+          setSelectedCity(value);
+          setCurrentPage(1);
+        }}
+      />
+
+      {/* Pagination Controls */}
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        setCurrentPage={setCurrentPage}
+      />
     </section>
   );
 };

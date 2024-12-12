@@ -25,28 +25,34 @@ export const groupDataByDateAndRestaurant = (data: ResultListData) => {
 
 export const filterRestaurants = (
   restaurants: GroupedData[string],
-  searchTerm: string
+  searchTerm: string,
+  selectedRestaurant: string,
+  selectedCity: string
 ) => {
-  if (!searchTerm.trim()) {
-    return restaurants; // Return all restaurants if searchTerm is empty
-  }
-
   const lowerSearchTerm = searchTerm.toLowerCase();
 
   return Object.entries(restaurants).reduce(
     (result, [restaurantName, restaurantData]) => {
-      const matchesRestaurant = restaurantName
-        .toLowerCase()
-        .includes(lowerSearchTerm);
-      const matchingDishes = restaurantData.dishes.filter((dish) =>
-        dish.dish_name.toLowerCase().includes(lowerSearchTerm)
-      );
+      // Filter by selected restaurant
+      if (selectedRestaurant && restaurantName !== selectedRestaurant) {
+        return result;
+      }
 
-      if (matchesRestaurant || matchingDishes.length > 0) {
-        result[restaurantName] = {
-          ...restaurantData,
-          dishes: matchesRestaurant ? restaurantData.dishes : matchingDishes,
-        };
+      // Filter by selected city
+      if (selectedCity && restaurantData.city !== selectedCity) {
+        return result;
+      }
+
+      // Search term filtering
+      const matchesSearchTerm =
+        restaurantName.toLowerCase().includes(lowerSearchTerm) ||
+        restaurantData.city.toLowerCase().includes(lowerSearchTerm) ||
+        restaurantData.dishes.some((dish) =>
+          dish.dish_name.toLowerCase().includes(lowerSearchTerm)
+        );
+
+      if (matchesSearchTerm || !searchTerm.trim()) {
+        result[restaurantName] = restaurantData;
       }
 
       return result;

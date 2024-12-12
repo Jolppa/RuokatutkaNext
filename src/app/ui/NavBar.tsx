@@ -7,7 +7,10 @@ import { auth } from "@/auth";
 const NavBar: React.FC = async () => {
   const session = await auth();
   return (
-    <nav className="bg-gray-800 p-4 min-w-full">
+    <nav
+      className="bg-[#4F6169] p-4 min-w-full shadow-xl"
+      aria-label="Navigointi valikko"
+    >
       <ul className="flex justify-around list-none m-0 p-0">
         <li className="m-0">
           <Link href="/">Etusivu</Link>
