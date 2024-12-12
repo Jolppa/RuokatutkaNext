@@ -229,7 +229,7 @@ export async function authenticate(
     }
     // throw error;
   }
-  redirect("/dashboard");
+  redirect("/tutka");
 }
 
 export async function signout() {
