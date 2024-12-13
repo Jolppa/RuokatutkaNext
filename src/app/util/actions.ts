@@ -57,7 +57,7 @@ export async function listRestaurants(
     }
 
     browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       devtools: false,
     });
     const page = await browser.newPage();
