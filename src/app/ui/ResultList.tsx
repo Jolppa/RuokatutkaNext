@@ -107,7 +107,9 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
                   <h3 className="text-lg font-bold">
                     {highlightText(restaurantName, searchTerm)}
                   </h3>
-                  <p className="text-sm text-gray-400">{restaurantData.city}</p>
+                  <p className="text-sm font-bold text-black">
+                    {restaurantData.city}
+                  </p>
                   <ul className="ml-4 mt-2 list-disc">
                     {restaurantData.dishes.map((dish) => (
                       <li key={dish.id} className="mb-2">

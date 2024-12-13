@@ -13,10 +13,13 @@ import { signIn, signOut } from "../../auth";
 import { auth } from "../../auth";
 import { saveDataToDatabase } from "./data";
 
+//! This whole function needs a lot of work, but it works for now
 export async function listRestaurants(
   prevState: FormState | undefined,
   formData: FormData
 ): Promise<FormState> {
+  //! Puppeteer is not working in Vercel: https://github.com/orgs/vercel/discussions/124
+  //! Need to move Puppeteer to dev dependencies and use puppeteer-core and chrome-aws-lambda
   let browser;
   try {
     const session = await auth();
@@ -105,8 +108,7 @@ export async function listRestaurants(
       searchInput,
       (el) => (el as HTMLInputElement).value
     );
-    console.log(city);
-    // press enter
+
     await page.keyboard.press("Enter");
 
     // await page.waitForSelector(readyButton);
@@ -203,7 +205,6 @@ export async function listRestaurants(
     // Save to database
 
     await saveDataToDatabase(userId, data);
-    console.log("end");
     // I don't know if we are doing anything with the data
     return { data };
   } catch (error) {
@@ -249,11 +250,26 @@ export async function signout() {
 export async function register(
   prevState: string | undefined,
   formData: FormData
-) {
+): Promise<string> {
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
-  if (!username || !password) {
-    return "Please fill out the form.";
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  // Works for now, but add zod validation here later
+  if (!username || !password || !confirmPassword) {
+    return "Täytä kaikki kentät.";
+  }
+
+  if (password !== confirmPassword) {
+    return "Salasanat eivät täsmää.";
+  }
+
+  if (username.length < 3) {
+    return "Käyttäjätunnuksen on oltava vähintään 3 merkkiä pitkä.";
+  }
+
+  if (password.length < 6) {
+    return "Salasanan on oltava vähintään 6 merkkiä pitkä.";
   }
 
   const hashedPassword = await bcrypt.hash(password as string, 10);
@@ -264,7 +280,7 @@ export async function register(
       await sql<User>`SELECT * FROM users WHERE username = ${username}`;
     if (users.rows.length > 0) {
       console.log("User already exists.");
-      return "User already exists.";
+      return "Käyttäjätunnus on jo käytössä.";
     }
 
     await sql<User>`
@@ -274,7 +290,7 @@ export async function register(
     await signIn("credentials", { username, password, redirect: false });
   } catch (error) {
     console.error("Failed to register user:", error);
-    return "Failed to register user.";
+    return "Tapahtui virhe. Yritä uudelleen myöhemmin.";
   }
-  redirect("/dashboard");
+  redirect("/tutka");
 }

@@ -9,48 +9,62 @@ const Page: NextPage = () => {
   const [errorMessage, formAction] = useActionState(register, undefined);
 
   return (
-    <section className="border-white border-2 rounded-lg p-4 w-1/2">
-      <h1 className="text-xl font-bold">Register</h1>
-      <div className="flex flex-col"></div>
+    <section className="max-w-md mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Rekisteröidy</h1>
+      {errorMessage && (
+        <div className="mb-4 text-red-600" role="alert" aria-live="assertive">
+          {errorMessage}
+        </div>
+      )}
       <form action={formAction}>
         <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="username"
-          >
-            Username
+          <label htmlFor="username" className="block mb-1">
+            Käyttäjätunnus
           </label>
           <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="username"
             type="text"
+            id="username"
             name="username"
-            placeholder="Username"
+            required
+            minLength={3}
+            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
+            placeholder="Käyttäjätunnus"
           />
         </div>
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="password"
-          >
-            Password
+        <div className="mb-4">
+          <label htmlFor="password" className="block mb-1">
+            Salasana
           </label>
           <input
-            className="shadow appearance-none border border-red rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            type="password"
             id="password"
             name="password"
-            type="password"
-            placeholder="******************"
+            required
+            minLength={6}
+            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
+            placeholder="********"
           />
         </div>
-        <div className="flex items-center justify-between">
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-            Register
-          </button>
+        <div className="mb-4">
+          <label htmlFor="confirmPassword" className="block mb-1">
+            Vahvista salasana
+          </label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            required
+            minLength={6}
+            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
+            placeholder="********"
+          />
         </div>
-        {errorMessage && (
-          <p className="text-red-500 text-center">{errorMessage}</p>
-        )}
+        <button
+          type="submit"
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+        >
+          Rekisteröidy
+        </button>
       </form>
     </section>
   );

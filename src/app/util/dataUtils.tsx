@@ -78,9 +78,9 @@ export const getDateColor = (dateStr: string) => {
   today.setHours(0, 0, 0, 0);
   date.setHours(0, 0, 0, 0);
 
-  if (date.getTime() === today.getTime()) return "bg-green-800/50";
+  if (date.getTime() === today.getTime()) return "bg-green-700/50";
   if (date < today) return "bg-red-800/50";
-  return "bg-yellow-800/50";
+  return "bg-green-500/50";
 };
 
 export const highlightText = (text: string, highlight: string) => {
