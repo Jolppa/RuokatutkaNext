@@ -24,6 +24,7 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
   const [data, setData] = useState<ResultListData>(null);
   const [groupedData, setGroupedData] = useState<GroupedData>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   // Filter states
   const [restaurantOptions, setRestaurantOptions] = useState<string[]>([]);
@@ -34,8 +35,10 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
   // Fetch and group data whenever refreshKey changes
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       const result = await fetchData();
       setData(result);
+      setLoading(false);
       const grouped = groupDataByDateAndRestaurant(result);
       setGroupedData(grouped);
       setCurrentPage(1);
@@ -82,8 +85,12 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
     }
   }, [currentPage, totalPages]);
 
+  if (loading) {
+    return <p>Haetaan...</p>;
+  }
+
   return (
-    <section className="border-white border-2 rounded-lg p-4 w-1/2">
+    <section className="border shadow-2xl rounded-lg p-4 w-1/2">
       {/* Data Display */}
       {data && currentDate ? (
         <div

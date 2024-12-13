@@ -89,11 +89,16 @@ export async function saveDataToDatabase(
           // console.log(day.date);
           // Insert dish
           await sql`
-            INSERT INTO dishes (id, name, restaurant_id, description, date) 
-            VALUES (${uuidv4()},${dish.dish}, ${restaurantId}, ${
-            dish.description
-          }, ${day.date.split("T")[0]})
-            ON CONFLICT (name, restaurant_id) DO UPDATE SET description = EXCLUDED.description
+            INSERT INTO dishes (id, name, restaurant_id, description, date)
+            VALUES (
+              ${uuidv4()},
+              ${dish.dish},
+              ${restaurantId},
+              ${dish.description},
+              ${day.date.split("T")[0]}
+            )
+            ON CONFLICT (restaurant_id, name) DO UPDATE
+            SET description = EXCLUDED.description, date = EXCLUDED.date
           `;
         }
       }

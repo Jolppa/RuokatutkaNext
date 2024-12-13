@@ -1,3 +1,5 @@
+import React from "react";
+
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
@@ -12,25 +14,31 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex gap-2">
+    <nav
+      className="flex gap-2"
+      role="navigation"
+      aria-label="Tulos-sivunavigointi"
+    >
       <button
         onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
         disabled={currentPage === 1}
-        className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600 disabled:bg-gray-400"
+        className="px-4 py-2 bg-[#4F6169] rounded-lg text-white hover:bg-[#7B898E] disabled:bg-gray-400"
+        aria-label="Edellinen sivu"
       >
         Edellinen
       </button>
-      <span className="px-4 py-2">
+      <span className="px-4 py-2" aria-live="polite" aria-atomic="true">
         Sivu {currentPage} / {totalPages}
       </span>
       <button
         onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
         disabled={currentPage === totalPages}
-        className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600 disabled:bg-gray-400"
+        className="px-4 py-2 bg-[#4F6169] rounded-lg text-white hover:bg-[#7B898E] disabled:bg-gray-400"
+        aria-label="Seuraava sivu"
       >
         Seuraava
       </button>
-    </div>
+    </nav>
   );
 };
 

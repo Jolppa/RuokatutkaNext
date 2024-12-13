@@ -17,6 +17,7 @@ export async function listRestaurants(
   prevState: FormState | undefined,
   formData: FormData
 ): Promise<FormState> {
+  let browser;
   try {
     const session = await auth();
     // Validate the form data here
@@ -32,6 +33,7 @@ export async function listRestaurants(
     }
 
     // VALIDATION SECTION
+    //! This needs improvement
     const parsedFormData = z.object({
       kaupunki: z
         .string()
@@ -54,9 +56,9 @@ export async function listRestaurants(
       });
     }
 
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       headless: false,
-      devtools: true,
+      devtools: false,
     });
     const page = await browser.newPage();
 
@@ -112,6 +114,8 @@ export async function listRestaurants(
 
     await page.click(readyButton);
 
+    await page.waitForNetworkIdle();
+
     const days = await page.$$eval(".dayview-filter", (days) => {
       return days.map((day) => day.children.length)[0];
     });
@@ -134,9 +138,11 @@ export async function listRestaurants(
           (dayFilter as HTMLInputElement).click()
         );
         // wait for the day to load
+        //! This is not working properly
         await page.waitForSelector(
           `.dayview-filter > li:nth-child(${i + 1}) > a`
         );
+        await delay(2000);
         await page.$eval(
           `.dayview-filter > li:nth-child(${i + 1}) > a`,
           (day) => (day as HTMLAnchorElement).click()
@@ -205,6 +211,10 @@ export async function listRestaurants(
     return {
       error: "Jotain meni pieleen, yritä uudelleen.",
     };
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 

@@ -1,3 +1,5 @@
+import React from "react";
+
 interface FilterControlsProps {
   sortAscending: boolean;
   setSortAscending: (value: boolean) => void;
@@ -29,11 +31,18 @@ const FilterControls: React.FC<FilterControlsProps> = ({
       <div className="flex items-center">
         <button
           onClick={() => setSortAscending(!sortAscending)}
-          className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
+          className="px-4 py-2 bg-[#4F6169] rounded-lg text-white hover:bg-[#7B898E]"
+          aria-label={`Järjestä päivämäärän mukaan ${
+            sortAscending ? "nouseva" : "laskeva"
+          } järjestys`}
         >
           Päivämäärä {sortAscending ? "↑" : "↓"}
         </button>
+        <label htmlFor="search-input" className="sr-only">
+          Haku
+        </label>
         <input
+          id="search-input"
           type="text"
           placeholder="Haku"
           value={searchTerm}
@@ -44,7 +53,11 @@ const FilterControls: React.FC<FilterControlsProps> = ({
 
       {/* Filter Selection Section */}
       <div className="flex items-center gap-4">
+        <label htmlFor="restaurant-select" className="sr-only">
+          Suodata ravintolan mukaan
+        </label>
         <select
+          id="restaurant-select"
           value={selectedRestaurant}
           onChange={(e) => setSelectedRestaurant(e.target.value)}
           className="px-4 py-2 border rounded-lg text-black"
@@ -57,7 +70,11 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           ))}
         </select>
 
+        <label htmlFor="city-select" className="sr-only">
+          Suodata kaupungin mukaan
+        </label>
         <select
+          id="city-select"
           value={selectedCity}
           onChange={(e) => setSelectedCity(e.target.value)}
           className="px-4 py-2 border rounded-lg text-black"

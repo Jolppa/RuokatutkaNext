@@ -31,7 +31,7 @@ export default function Form({ onActionComplete }: FormProps) {
   return (
     <section>
       <form
-        className="flex flex-col items-center rounded-lg p-4 shadow-2xl bg-[#4F6169]"
+        className="flex flex-col items-center rounded-lg p-4 shadow-2xl border"
         action={formAction}
       >
         <label className="text-lg" htmlFor="kaupunki">
@@ -47,7 +47,7 @@ export default function Form({ onActionComplete }: FormProps) {
         />
         <button
           className={`rounded-lg p-2 mt-2 ${
-            isPending ? "bg-gray-500" : "bg-blue-500 text-white"
+            isPending ? "bg-gray-500" : "bg-[#4F6169] hover:bg-[#7B898E]"
           }`}
           onClick={resetError}
           disabled={isPending}
