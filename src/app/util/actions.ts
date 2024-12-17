@@ -1,6 +1,7 @@
 "use server";
 
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import { AuthError } from "next-auth";
 import { sql } from "@vercel/postgres";
 import { v4 as uuidv4 } from "uuid";
@@ -20,6 +21,7 @@ export async function listRestaurants(
 ): Promise<FormState> {
   //! Puppeteer is not working in Vercel: https://github.com/orgs/vercel/discussions/124
   //! Need to move Puppeteer to dev dependencies and use puppeteer-core and chrome-aws-lambda
+
   let browser;
   try {
     const session = await auth();
@@ -59,14 +61,26 @@ export async function listRestaurants(
       });
     }
 
-    browser = await puppeteer.launch({
-      headless: true,
-      devtools: false,
-    });
+    if (process.env.NODE_ENV === "development") {
+      browser = await puppeteer.launch({
+        executablePath:
+          "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        headless: false,
+        defaultViewport: { width: 1366, height: 768 },
+        args: [],
+      });
+    } else {
+      // This is for Vercel
+      //! Untested
+      browser = await puppeteer.launch({
+        executablePath: await chromium.executablePath(),
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        headless: chromium.headless,
+      });
+    }
     const page = await browser.newPage();
 
-    // Set viewport and user agent (just in case for nice viewing)
-    await page.setViewport({ width: 1366, height: 768 });
     await page.goto("https://www.lounaat.info");
     // wait for the page to load
     // Make it so that the banner is clicked if it exists

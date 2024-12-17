@@ -9,11 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@sparticuz/chromium": "131",
     "@vercel/postgres": "^0.10.0",
     "bcryptjs": "^2.4.3",
     "next": "15.0.2",
     "next-auth": "5.0.0-beta.25",
-    "puppeteer": "^23.7.1",
+    "puppeteer-core": "^23.10.4",
     "react": "19.0.0-rc-02c0e824-20241028",
     "react-dom": "19.0.0-rc-02c0e824-20241028",
     "uuid": "^11.0.3",
