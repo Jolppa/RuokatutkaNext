@@ -72,8 +72,12 @@ export async function listRestaurants(
     } else {
       // This is for Vercel
       //! Untested
+      const executablePath = await chromium.executablePath();
+      if (!executablePath) {
+        throw new Error("Chromium executable path not found");
+      }
       browser = await puppeteer.launch({
-        executablePath: await chromium.executablePath(),
+        executablePath: executablePath,
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
         headless: chromium.headless,
