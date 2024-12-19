@@ -1,6 +1,6 @@
 {
   "functions": {
-    "src/app/util/actions": {
+    "src/**": {
       "maxDuration": 30
     }
   }
