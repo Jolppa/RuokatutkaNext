@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "src/app/util/actions": {
+      "maxDuration": 30
+    }
+  }
+}

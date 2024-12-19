@@ -24,6 +24,9 @@ export async function listRestaurants(
 
   let browser;
   try {
+    const startTime = Date.now();
+    console.log("Function started");
+
     const session = await auth();
     // Validate the form data here
     const rawCity = formData.get("kaupunki");
@@ -89,7 +92,7 @@ export async function listRestaurants(
     // wait for the page to load
     // Make it so that the banner is clicked if it exists
 
-    // SELECTORS
+    // * SELECTORS
     const banner =
       "body > div.zevoy-banner > div > div.banner-promo.active > div.banner-close > div";
     const viewFilter = "#view-filter";
@@ -98,7 +101,7 @@ export async function listRestaurants(
     const searchButton = "#locator";
     const searchInput = "#address";
     const readyButton = "#dialog > div > div:nth-child(2) > div > button";
-    // END SELECTORS
+    // * END SELECTORS
 
     await page.waitForSelector(banner);
     await page.waitForSelector(".css-47sehv");
@@ -224,6 +227,7 @@ export async function listRestaurants(
 
     await saveDataToDatabase(userId, data);
     // I don't know if we are doing anything with the data
+    console.log(`Function completed in ${Date.now() - startTime}ms`);
     return { data };
   } catch (error) {
     console.error("Failed to list restaurants:", error);
