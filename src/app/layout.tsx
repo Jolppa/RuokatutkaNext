@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import NavBar from "./ui/NavBar";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,13 +34,14 @@ export default async function RootLayout({
         <header>
           <NavBar />
         </header>
-
-        <main
-          className="flex justify-center items-center mx-auto min-h-screen justify-around"
-          role="main"
-        >
-          {children}
-        </main>
+        <SessionProvider session={undefined}>
+          <main
+            className="flex justify-center items-center mx-auto min-h-screen justify-around"
+            role="main"
+          >
+            {children}
+          </main>
+        </SessionProvider>
       </body>
     </html>
   );

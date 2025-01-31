@@ -14,6 +14,13 @@ export default auth((req) => {
   if (!isAuthenticated && nextUrl.pathname === "/tutka") {
     return Response.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
   }
+
+  if (
+    (isAuthenticated && nextUrl.pathname === "/kirjaudu") ||
+    (isAuthenticated && nextUrl.pathname === "/tunnusluonti")
+  ) {
+    return Response.redirect(new URL("tutka", nextUrl));
+  }
 });
 
 export const config = {

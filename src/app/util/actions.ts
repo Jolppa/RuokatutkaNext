@@ -1,55 +1,50 @@
 "use server";
 
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import { AuthError } from "next-auth";
 import { sql } from "@vercel/postgres";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
-import { User } from "./types";
+import { entryObject, User } from "./types";
 import { redirect } from "next/navigation";
 import { FormState } from "./types";
-import { z } from "zod";
 import { signIn, signOut } from "../../auth";
 import { auth } from "../../auth";
 import { saveDataToDatabase } from "./data";
+import { validateCityData } from "./validation";
 
 //! This whole function needs a lot of work, but it works for now
 export async function listRestaurants(
   prevState: FormState | undefined,
   formData: FormData
 ): Promise<FormState> {
-  //! Puppeteer is not working in Vercel: https://github.com/orgs/vercel/discussions/124
-  //! Need to move Puppeteer to dev dependencies and use puppeteer-core and chrome-aws-lambda
+  // Currently the issue with Vercel is that this function takes too long to run. Next step would be to optimize the function
+  // TODO
+  // * 1. Add proper validation
+  // * 2. Refactor / Optimize
+
   let browser;
   try {
+    const startTime = Date.now();
+    console.log("Function started");
+
     const session = await auth();
     // Validate the form data here
-    const rawCity = formData.get("kaupunki");
-    const userId = session?.user?.id || undefined;
 
+    // VALIDATION SECTION
+    //! This needs improvement
+    const rawCity = formData.get("kaupunki");
     if (!rawCity) {
       throw new Error("Kaupunki on pakollinen kenttä.");
     }
 
+    const userId = session?.user?.id || undefined;
     if (!userId) {
       throw new Error("Käyttäjä ei ole kirjautunut sisään.");
     }
 
-    // VALIDATION SECTION
-    //! This needs improvement
-    const parsedFormData = z.object({
-      kaupunki: z
-        .string()
-        .min(4, { message: "Kirjoita vähintään 4 kirjainta" }),
-    });
-
-    const validatedFormData = parsedFormData.safeParse({
-      kaupunki: rawCity as string,
-    });
-
-    if (!validatedFormData.success) {
-      throw new Error(validatedFormData.error.errors[0].message);
-    }
+    validateCityData({ kaupunki: rawCity as string });
 
     // END VALIDATION SECTION
 
@@ -59,19 +54,43 @@ export async function listRestaurants(
       });
     }
 
-    browser = await puppeteer.launch({
-      headless: true,
-      devtools: false,
-    });
+    if (
+      process.env.NODE_ENV === "development" ||
+      process.env.NODE_ENV === "test"
+    ) {
+      browser = await puppeteer.launch({
+        executablePath:
+          "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        headless: true,
+        defaultViewport: { width: 1366, height: 768 },
+        args: [],
+        devtools: false,
+      });
+    } else {
+      // This is for Vercel
+      const executablePath = await chromium.executablePath();
+      if (!executablePath) {
+        throw new Error("Chromium executable path not found");
+      }
+      browser = await puppeteer.launch({
+        executablePath: executablePath,
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        headless: chromium.headless,
+      });
+    }
     const page = await browser.newPage();
 
-    // Set viewport and user agent (just in case for nice viewing)
-    await page.setViewport({ width: 1366, height: 768 });
-    await page.goto("https://www.lounaat.info");
-    // wait for the page to load
-    // Make it so that the banner is clicked if it exists
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+    );
+    await page.setExtraHTTPHeaders({
+      "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+    });
 
-    // SELECTORS
+    await page.goto("https://www.lounaat.info");
+
+    // * SELECTORS
     const banner =
       "body > div.zevoy-banner > div > div.banner-promo.active > div.banner-close > div";
     const viewFilter = "#view-filter";
@@ -80,15 +99,20 @@ export async function listRestaurants(
     const searchButton = "#locator";
     const searchInput = "#address";
     const readyButton = "#dialog > div > div:nth-child(2) > div > button";
-    // END SELECTORS
+    // * END SELECTORS
 
-    await page.waitForSelector(banner);
-    await page.waitForSelector(".css-47sehv");
     // accept cookies
-    await page.$eval(".css-47sehv", (button) =>
-      (button as HTMLInputElement).click()
-    );
-    await page.click(banner);
+    try {
+      await page.waitForSelector(banner, { timeout: 5000 });
+      await page.waitForSelector(".css-47sehv", { timeout: 3000 });
+      await page.$eval(".css-47sehv", (button) =>
+        (button as HTMLInputElement).click()
+      );
+      await page.click(banner);
+    } catch {
+      // Handle errors related to selectors not being found
+      console.error("No banner detected. Moving on...");
+    }
 
     await page.waitForSelector(viewFilter);
     await page.click(viewFilter);
@@ -104,19 +128,22 @@ export async function listRestaurants(
 
     await delay(2000);
 
+    await page.keyboard.press("Enter");
+
     const city = await page.$eval(
       searchInput,
       (el) => (el as HTMLInputElement).value
     );
 
-    await page.keyboard.press("Enter");
-
     // await page.waitForSelector(readyButton);
+    //! This works inconsistentently
     await page.waitForNetworkIdle();
 
     await page.click(readyButton);
 
-    await page.waitForNetworkIdle();
+    // await page.waitForNetworkIdle();
+    // await delay(2000);
+    await page.waitForSelector(".menu");
 
     const days = await page.$$eval(".dayview-filter", (days) => {
       return days.map((day) => day.children.length)[0];
@@ -125,16 +152,9 @@ export async function listRestaurants(
     const data = [];
 
     for (let i = 0; i < days; i++) {
-      // Move this type to the types file
-      const entryObj: {
-        date: string;
-        restaurants: {
-          name: string;
-          city: string;
-          dishes: { dish: string; description: string }[];
-        }[];
-      } = { date: "", restaurants: [] };
+      const entryObj: entryObject = { date: "", restaurants: [] };
 
+      // This changes the day
       if (i !== 0) {
         await page.$eval("#day-filter", (dayFilter) =>
           (dayFilter as HTMLInputElement).click()
@@ -158,40 +178,52 @@ export async function listRestaurants(
 
       const [day, month] = dateString.substring(2).split(".");
       const year = new Date().getFullYear();
-      const date = new Date(year, parseInt(month) - 1, parseInt(day));
+      const date = new Date(Date.UTC(year, parseInt(month) - 1, parseInt(day)));
 
       entryObj.date = date.toISOString();
 
       // Wait for the dishes to load
-      await page.waitForSelector(".menu-item");
+      //! This fails sometimes. Delay(2000) is slow but works
+      await page.waitForSelector(".menu");
 
       const restaurants = await page.$$eval(
         ".menu",
         (entries, city) => {
-          const cleanUpString = (str: string) =>
-            str.replace(/\s+/g, " ").trim();
-          return entries.map((entry: Element) => {
-            const name = cleanUpString(
-              entry.querySelector("div.item-header > h3")?.textContent || ""
-            );
-            const dishes = Array.from(entry.querySelectorAll(".dish")).map(
-              (menu) => {
-                let dish = menu?.textContent || "";
-                if (dish) {
-                  dish = cleanUpString(dish.replace(/[^a-zA-ZåäöÅÄÖ ]/g, ""));
-                  console.log(dish);
-                }
+          // const cleanUpString = (str: string) =>
+          //   str.replace(/\s+/g, " ").trim();
+          return entries
+            .map((entry: Element) => {
+              // const name = cleanUpString(
+              //   entry.querySelector("div.item-header > h3")?.textContent || ""
+              // );
+              const name =
+                entry.querySelector("div.item-header > h3")?.textContent || "";
+              const dishes = Array.from(entry.querySelectorAll(".dish")).map(
+                (menu) => {
+                  // const dish = menu?.textContent || "";
+                  // // if (dish) {
+                  // //   dish = cleanUpString(dish.replace(/[^a-zA-ZåäöÅÄÖ ]/g, ""));
+                  // // }
 
-                const description =
-                  menu.querySelector(".menu-item-price")?.textContent || "";
-                return { dish, description };
+                  // const description =
+                  //   menu.querySelector(".menu-item-price")?.textContent || "";
+                  // return { dish, description };
+                  const cloneMenu = menu.cloneNode(true) as HTMLElement;
+                  cloneMenu.querySelectorAll("a")?.forEach((el) => el.remove());
+                  const dish = cloneMenu.textContent || "";
+                  const description =
+                    menu.querySelector(".menu-item-price")?.textContent || "";
+                  return { dish, description };
+                }
+              );
+              if (dishes.length === 0) {
+                // dishes.push({ dish: "No dishes found", description: "" });
+                return null;
               }
-            );
-            if (dishes.length === 0) {
-              dishes.push({ dish: "No dishes found", description: "" });
-            }
-            return { city, name, dishes };
-          });
+
+              return { city, name, dishes };
+            })
+            .filter((entry) => entry !== null);
         },
         city
       );
@@ -201,11 +233,17 @@ export async function listRestaurants(
     }
 
     await browser.close();
+    console.log("Data parsed successfully");
+    // take time
+    console.log(`Parser done in ${Date.now() - startTime}ms`);
 
     // Save to database
 
-    await saveDataToDatabase(userId, data);
-    // I don't know if we are doing anything with the data
+    if (process.env.NODE_ENV !== "test") {
+      console.log("Saving data to database");
+      await saveDataToDatabase(userId, data);
+    }
+    console.log(`Function completed in ${Date.now() - startTime}ms`);
     return { data };
   } catch (error) {
     console.error("Failed to list restaurants:", error);
@@ -219,7 +257,7 @@ export async function listRestaurants(
   }
 }
 
-// AUTHENTICATION ACTIONS
+// * AUTHENTICATION ACTIONS
 
 export async function authenticate(
   prevState: string | undefined,

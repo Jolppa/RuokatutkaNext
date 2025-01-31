@@ -40,3 +40,12 @@ export type GroupedData = {
     };
   };
 };
+
+export type entryObject = {
+  date: string;
+  restaurants: {
+    name: string;
+    city: string;
+    dishes: { dish: string; description: string }[];
+  }[];
+};

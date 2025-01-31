@@ -7,6 +7,7 @@ export const authConfig = {
   pages: {
     error: "/",
     signIn: "/kirjaudu",
+    signOut: "/",
   },
   callbacks: {
     async authorized({ auth }) {

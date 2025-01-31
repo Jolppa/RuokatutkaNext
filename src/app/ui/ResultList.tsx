@@ -54,9 +54,24 @@ const ResultList = ({ refreshKey }: ResultListProps) => {
 
       setRestaurantOptions(Array.from(restaurantsSet).sort());
       setCityOptions(Array.from(citiesSet).sort());
+
+      // Set currentPage to today's date
+      const sortedDates = getSortedDates(grouped, sortAscending);
+      const today = new Date();
+      const todayFormatted = today.toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+      const todayIndex = sortedDates.findIndex(
+        (date) => date === todayFormatted
+      );
+
+      if (todayIndex !== -1) {
+        setCurrentPage(todayIndex + 1);
+      } else {
+        setCurrentPage(1); // Default to first page if today isn't found
+      }
     };
     getData();
-  }, [refreshKey]);
+  }, [refreshKey, sortAscending]);
 
   // Filter and sort data
   const filteredGroupedData: GroupedData = {};
