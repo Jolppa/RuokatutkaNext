@@ -61,10 +61,10 @@ export async function listRestaurants(
       browser = await puppeteer.launch({
         executablePath:
           "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-        headless: false,
+        headless: true,
         defaultViewport: { width: 1366, height: 768 },
         args: [],
-        devtools: true,
+        devtools: false,
       });
     } else {
       // This is for Vercel
@@ -101,13 +101,18 @@ export async function listRestaurants(
     const readyButton = "#dialog > div > div:nth-child(2) > div > button";
     // * END SELECTORS
 
-    await page.waitForSelector(banner);
-    await page.waitForSelector(".css-47sehv");
     // accept cookies
-    await page.$eval(".css-47sehv", (button) =>
-      (button as HTMLInputElement).click()
-    );
-    await page.click(banner);
+    try {
+      await page.waitForSelector(banner, { timeout: 5000 });
+      await page.waitForSelector(".css-47sehv", { timeout: 3000 });
+      await page.$eval(".css-47sehv", (button) =>
+        (button as HTMLInputElement).click()
+      );
+      await page.click(banner);
+    } catch {
+      // Handle errors related to selectors not being found
+      console.error("No banner detected. Moving on...");
+    }
 
     await page.waitForSelector(viewFilter);
     await page.click(viewFilter);
@@ -137,7 +142,8 @@ export async function listRestaurants(
     await page.click(readyButton);
 
     // await page.waitForNetworkIdle();
-    await delay(2000);
+    // await delay(2000);
+    await page.waitForSelector(".menu");
 
     const days = await page.$$eval(".dayview-filter", (days) => {
       return days.map((day) => day.children.length)[0];
@@ -173,7 +179,6 @@ export async function listRestaurants(
       const [day, month] = dateString.substring(2).split(".");
       const year = new Date().getFullYear();
       const date = new Date(Date.UTC(year, parseInt(month) - 1, parseInt(day)));
-      console.log(date);
 
       entryObj.date = date.toISOString();
 
@@ -184,30 +189,41 @@ export async function listRestaurants(
       const restaurants = await page.$$eval(
         ".menu",
         (entries, city) => {
-          const cleanUpString = (str: string) =>
-            str.replace(/\s+/g, " ").trim();
-          return entries.map((entry: Element) => {
-            const name = cleanUpString(
-              entry.querySelector("div.item-header > h3")?.textContent || ""
-            );
-            const dishes = Array.from(entry.querySelectorAll(".dish")).map(
-              (menu) => {
-                let dish = menu?.textContent || "";
-                if (dish) {
-                  dish = cleanUpString(dish.replace(/[^a-zA-ZåäöÅÄÖ ]/g, ""));
+          // const cleanUpString = (str: string) =>
+          //   str.replace(/\s+/g, " ").trim();
+          return entries
+            .map((entry: Element) => {
+              // const name = cleanUpString(
+              //   entry.querySelector("div.item-header > h3")?.textContent || ""
+              // );
+              const name =
+                entry.querySelector("div.item-header > h3")?.textContent || "";
+              const dishes = Array.from(entry.querySelectorAll(".dish")).map(
+                (menu) => {
+                  // const dish = menu?.textContent || "";
+                  // // if (dish) {
+                  // //   dish = cleanUpString(dish.replace(/[^a-zA-ZåäöÅÄÖ ]/g, ""));
+                  // // }
+
+                  // const description =
+                  //   menu.querySelector(".menu-item-price")?.textContent || "";
+                  // return { dish, description };
+                  const cloneMenu = menu.cloneNode(true) as HTMLElement;
+                  cloneMenu.querySelectorAll("a")?.forEach((el) => el.remove());
+                  const dish = cloneMenu.textContent || "";
+                  const description =
+                    menu.querySelector(".menu-item-price")?.textContent || "";
+                  return { dish, description };
                 }
-
-                const description =
-                  menu.querySelector(".menu-item-price")?.textContent || "";
-                return { dish, description };
+              );
+              if (dishes.length === 0) {
+                // dishes.push({ dish: "No dishes found", description: "" });
+                return null;
               }
-            );
-            if (dishes.length === 0) {
-              dishes.push({ dish: "No dishes found", description: "" });
-            }
 
-            return { city, name, dishes };
-          });
+              return { city, name, dishes };
+            })
+            .filter((entry) => entry !== null);
         },
         city
       );
@@ -227,7 +243,6 @@ export async function listRestaurants(
       console.log("Saving data to database");
       await saveDataToDatabase(userId, data);
     }
-    // I don't know if we are doing anything with the data
     console.log(`Function completed in ${Date.now() - startTime}ms`);
     return { data };
   } catch (error) {
